@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Create account')}"></head>
+<body>
+<div class="auth-card" style="max-width:460px">
+    <div class="card">
+        <h1>Create your account</h1>
+        <p class="muted" style="margin:0 0 12px">Join as a creator or as a brand.</p>
+        <div class="flash err" th:if="${error}" th:text="${error}">error</div>
+
+        <form th:action="@{/register}" th:object="${form}" method="post">
+            <div class="role-pick">
+                <label><input type="radio" th:field="*{role}" value="CREATOR" onchange="toggleRole()">I'm a creator</label>
+                <label><input type="radio" th:field="*{role}" value="BRAND" onchange="toggleRole()">I'm a brand</label>
+            </div>
+
+            <label>Username</label>
+            <input th:field="*{username}" required>
+            <div class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+
+            <label>Display name</label>
+            <input th:field="*{displayName}" required>
+            <div class="field-error" th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}"></div>
+
+            <label>Email</label>
+            <input th:field="*{email}" type="email" required>
+            <div class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+            <label>Password</label>
+            <input th:field="*{password}" type="password" required>
+            <div class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+
+            <div id="creator-fields">
+                <div class="row">
+                    <div>
+                        <label>Main platform</label>
+                        <select th:field="*{platform}">
+                            <option th:each="p : ${platforms}" th:value="${p}" th:text="${p}">TIKTOK</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Handle</label>
+                        <input th:field="*{handle}" placeholder="@yourname">
+                    </div>
+                </div>
+                <div class="row">
+                    <div><label>Followers</label><input th:field="*{followerCount}" type="number" min="0"></div>
+                    <div><label>Base rate (S$ / video)</label><input th:field="*{baseRate}" type="number" min="0" step="10"></div>
+                </div>
+                <label>Niche</label>
+                <input th:field="*{niche}" placeholder="e.g. Food, Tech, Beauty">
+            </div>
+
+            <div id="brand-fields">
+                <label>Company name</label>
+                <input th:field="*{companyName}">
+                <label>Industry</label>
+                <input th:field="*{industry}" placeholder="e.g. F&B">
+            </div>
+
+            <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;margin-top:20px">Create account</button>
+        </form>
+        <p class="small muted" style="margin-top:18px">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+    </div>
+</div>
+<script>
+    function toggleRole() {
+        const isCreator = document.querySelector('input[name="role"]:checked').value === 'CREATOR';
+        document.getElementById('creator-fields').style.display = isCreator ? '' : 'none';
+        document.getElementById('brand-fields').style.display = isCreator ? 'none' : '';
+    }
+    toggleRole();
+</script>
+</body>
+</html>

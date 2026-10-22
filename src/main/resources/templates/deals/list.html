@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Deals')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+    <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+    <div class="page-head">
+        <div><h1 th:text="${isAdmin} ? 'All deals' : (${isBrand} ? 'Our deals' : 'My deals')">Deals</h1>
+            <div class="muted" th:text="${#lists.size(deals)} + ' deal(s)'">0</div></div>
+        <a th:if="${isBrand}" class="btn btn-primary" th:href="@{/brand/creators}">+ New proposal</a>
+    </div>
+
+    <div class="chips">
+        <a class="chip" th:classappend="${selected == null} ? 'active'" th:href="@{/deals}">All</a>
+        <a class="chip" th:each="s : ${statuses}" th:classappend="${s == selected} ? 'active'"
+           th:href="@{/deals(status=${s})}" th:text="${s}">STATUS</a>
+    </div>
+
+    <div class="card" style="padding:0">
+        <div th:if="${#lists.isEmpty(deals)}" class="empty">No deals here yet.</div>
+        <table th:unless="${#lists.isEmpty(deals)}">
+            <thead><tr>
+                <th>Deal</th>
+                <th th:unless="${isBrand}">Brand</th>
+                <th th:unless="${isCreator}">Creator</th>
+                <th>Amount</th><th>Video due</th><th>Status</th><th th:unless="${isAdmin}">Next step</th>
+            </tr></thead>
+            <tbody>
+            <tr class="clickable" th:each="d : ${deals}">
+                <td><a th:href="@{/deals/{id}(id=${d.id})}" th:text="${d.title}">Deal</a></td>
+                <td th:unless="${isBrand}" th:text="${d.brand.companyName}">Brand</td>
+                <td th:unless="${isCreator}" th:text="${d.creator.handle}">Creator</td>
+                <td th:with="amt=${d.agreedAmount != null ? d.agreedAmount : (d.counterAmount != null ? d.counterAmount : d.budget)}"
+                    th:text="'S$ ' + ${#numbers.formatDecimal(amt, 1, 'COMMA', 0, 'POINT')}">S$0</td>
+                <td th:text="${#temporals.format(d.dueDate, 'dd MMM yyyy')}">date</td>
+                <td>
+                    <span th:replace="~{fragments/layout :: status(${d.status})}"></span>
+                    <span class="badge danger" th:if="${d.paymentOverdue}">PAYMENT OVERDUE</span>
+                </td>
+                <td th:unless="${isAdmin}"><span class="action-hint" th:text="${@dealActions.nextAction(d, me.role)}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

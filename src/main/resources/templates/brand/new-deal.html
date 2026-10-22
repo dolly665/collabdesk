@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('New proposal')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container" style="max-width:680px">
+    <div class="page-head"><div>
+        <h1>New proposal</h1>
+        <div class="muted">To <b th:text="${creator.handle}">@handle</b> ·
+            base rate <span th:text="'S$ ' + ${#numbers.formatDecimal(creator.baseRate, 1, 'COMMA', 0, 'POINT')}">S$0</span></div>
+    </div></div>
+
+    <form class="card" th:action="@{/brand/deals}" th:object="${form}" method="post">
+        <input type="hidden" th:field="*{creatorId}">
+
+        <label>Title</label>
+        <input th:field="*{title}" placeholder="e.g. New menu launch video">
+        <div class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+
+        <label>Brief</label>
+        <textarea th:field="*{brief}" placeholder="What should the video include? Key messages, do's and don'ts..."></textarea>
+
+        <div class="row">
+            <div>
+                <label>Budget (S$)</label>
+                <input th:field="*{budget}" type="number" min="1" step="10">
+                <div class="field-error" th:if="${#fields.hasErrors('budget')}" th:errors="*{budget}"></div>
+            </div>
+            <div>
+                <label>Video due date</label>
+                <input th:field="*{dueDate}" type="date">
+                <div class="field-error" th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div>
+                <label>Revision rounds included</label>
+                <input th:field="*{maxRevisions}" type="number" min="0" max="5">
+                <div class="small muted">Requests beyond this are blocked.</div>
+            </div>
+            <div>
+                <label>Payment terms (days after publishing)</label>
+                <input th:field="*{paymentTermDays}" type="number" min="0" max="120">
+                <div class="small muted">Payment is flagged overdue after this.</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" type="submit">Send proposal</button>
+            <a class="btn" th:href="@{/brand/creators}">Cancel</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

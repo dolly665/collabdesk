@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Users')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+    <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+    <div class="page-head"><div><h1>Users</h1>
+        <div class="muted">Disabled users cannot sign in or appear in the creator directory.</div></div></div>
+    <div class="card" style="padding:0">
+        <table>
+            <thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="u : ${users}">
+                <td th:text="${u.username}">user</td>
+                <td th:text="${u.displayName}">name</td>
+                <td class="muted" th:text="${u.email}">email</td>
+                <td><span class="role-tag" th:text="${u.role}">ROLE</span></td>
+                <td class="muted" th:text="${#temporals.format(u.createdAt, 'dd MMM yyyy')}">date</td>
+                <td><span class="badge" th:classappend="${u.enabled} ? 'st-ACCEPTED' : 'st-OVERDUE'"
+                          th:text="${u.enabled} ? 'ACTIVE' : 'DISABLED'">ACTIVE</span></td>
+                <td style="text-align:right">
+                    <form th:unless="${u.id == me.id}" th:action="@{/admin/users/{id}/toggle(id=${u.id})}" method="post">
+                        <button class="btn btn-sm" th:classappend="${u.enabled} ? 'btn-danger'" type="submit"
+                                th:text="${u.enabled} ? 'Disable' : 'Enable'">Disable</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

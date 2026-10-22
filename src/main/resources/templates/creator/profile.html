@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Profile')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container" style="max-width:640px">
+    <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+    <div class="page-head"><div><h1>My creator profile</h1>
+        <div class="muted">This is what brands see in the creator directory.</div></div></div>
+
+    <form class="card" th:action="@{/creator/profile}" th:object="${form}" method="post">
+        <label>Display name</label>
+        <input th:field="*{displayName}">
+        <div class="field-error" th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}"></div>
+        <div class="row">
+            <div>
+                <label>Platform</label>
+                <select th:field="*{platform}">
+                    <option th:each="p : ${platforms}" th:value="${p}" th:text="${p}">TIKTOK</option>
+                </select>
+            </div>
+            <div>
+                <label>Handle</label>
+                <input th:field="*{handle}">
+                <div class="field-error" th:if="${#fields.hasErrors('handle')}" th:errors="*{handle}"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label>Followers</label>
+                <input th:field="*{followerCount}" type="number" min="0">
+                <div class="field-error" th:if="${#fields.hasErrors('followerCount')}" th:errors="*{followerCount}"></div>
+            </div>
+            <div>
+                <label>Base rate (S$ / video)</label>
+                <input th:field="*{baseRate}" type="number" min="0" step="10">
+                <div class="field-error" th:if="${#fields.hasErrors('baseRate')}" th:errors="*{baseRate}"></div>
+            </div>
+        </div>
+        <label>Niche</label>
+        <input th:field="*{niche}">
+        <label>Bio</label>
+        <textarea th:field="*{bio}"></textarea>
+        <div class="btn-group"><button class="btn btn-primary" type="submit">Save profile</button></div>
+    </form>
+</main>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Find creators')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+    <div class="page-head"><div><h1>Find creators</h1>
+        <div class="muted" th:text="${#lists.size(creators)} + ' creator(s) found'">0</div></div></div>
+
+    <form class="filters" th:action="@{/brand/creators}" method="get">
+        <div>
+            <label>Platform</label>
+            <select name="platform">
+                <option value="">Any platform</option>
+                <option th:each="p : ${platforms}" th:value="${p}" th:text="${p}" th:selected="${p == platform}">TIKTOK</option>
+            </select>
+        </div>
+        <div><label>Niche</label><input name="niche" th:value="${niche}" placeholder="e.g. food"></div>
+        <div><label>Max rate (S$)</label><input name="maxRate" type="number" min="0" th:value="${maxRate}"></div>
+        <div style="min-width:0"><button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn" th:href="@{/brand/creators}">Reset</a></div>
+    </form>
+
+    <div th:if="${#lists.isEmpty(creators)}" class="card empty">No creators match these filters.</div>
+    <div class="grid grid-cards">
+        <div class="card creator-card" th:each="c : ${creators}">
+            <div class="handle" th:text="${c.handle}">@handle</div>
+            <div class="meta">
+                <span th:text="${c.platform}">TIKTOK</span> ·
+                <span th:text="${#numbers.formatInteger(c.followerCount, 1, 'COMMA')} + ' followers'">0</span> ·
+                <span th:text="${c.niche}">niche</span>
+            </div>
+            <div class="bio" th:text="${c.bio}">bio</div>
+            <div class="foot">
+                <span><b th:text="'S$ ' + ${#numbers.formatDecimal(c.baseRate, 1, 'COMMA', 0, 'POINT')}">S$0</b>
+                    <span class="small muted">/ video</span></span>
+                <a class="btn btn-sm btn-primary" th:href="@{/brand/deals/new(creatorId=${c.id})}">Send proposal</a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${deal.title})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container"
+      th:with="st=${deal.status.name()}, open=${deal.status.name() == 'ACCEPTED'}">
+    <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+
+    <p class="small"><a th:href="@{/deals}">← Back to deals</a></p>
+    <div class="page-head">
+        <div>
+            <h1 th:text="${deal.title}">Deal title</h1>
+            <div class="muted">
+                <span th:text="${deal.brand.companyName}">Brand</span> →
+                <span th:text="${deal.creator.handle}">@creator</span>
+                (<span th:text="${deal.creator.platform}">TIKTOK</span>)
+            </div>
+        </div>
+        <div>
+            <span class="badge danger" th:if="${deal.paymentOverdue}">PAYMENT OVERDUE</span>
+            <span th:replace="~{fragments/layout :: status(${deal.status})}"></span>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- left column: terms + deliverables -->
+        <div>
+            <div class="card">
+                <h2>Brief</h2>
+                <p style="margin:0 0 16px;white-space:pre-wrap" th:text="${deal.brief ?: 'No brief provided.'}">brief</p>
+                <dl class="kv">
+                    <dt>Budget</dt>
+                    <dd th:text="'S$ ' + ${#numbers.formatDecimal(deal.budget, 1, 'COMMA', 2, 'POINT')}">S$</dd>
+                    <th:block th:if="${deal.counterAmount != null}">
+                        <dt>Counter-offer</dt>
+                        <dd th:text="'S$ ' + ${#numbers.formatDecimal(deal.counterAmount, 1, 'COMMA', 2, 'POINT')}">S$</dd>
+                    </th:block>
+                    <th:block th:if="${deal.agreedAmount != null}">
+                        <dt>Agreed fee</dt>
+                        <dd><b th:text="'S$ ' + ${#numbers.formatDecimal(deal.agreedAmount, 1, 'COMMA', 2, 'POINT')}">S$</b></dd>
+                    </th:block>
+                    <dt>Video due</dt><dd th:text="${#temporals.format(deal.dueDate, 'dd MMM yyyy')}">date</dd>
+                    <dt>Revision rounds</dt><dd th:text="${deal.maxRevisions} + ' included'">2</dd>
+                    <dt>Payment terms</dt><dd th:text="${deal.paymentTermDays} + ' days after publishing'">30</dd>
+                    <th:block th:if="${deal.publishedUrl != null}">
+                        <dt>Published</dt>
+                        <dd><a th:href="${deal.publishedUrl}" th:text="${deal.publishedUrl}" target="_blank">link</a></dd>
+                    </th:block>
+                    <th:block th:if="${deal.paymentDueDate != null}">
+                        <dt>Payment due</dt>
+                        <dd th:text="${#temporals.format(deal.paymentDueDate, 'dd MMM yyyy')}"
+                            th:style="${deal.paymentOverdue} ? 'color:var(--danger);font-weight:600'">date</dd>
+                    </th:block>
+                </dl>
+            </div>
+
+            <div class="card">
+                <h2>Deliverables</h2>
+                <div th:if="${#lists.isEmpty(deal.deliverables)}" class="empty">Deliverables are created when the deal is accepted.</div>
+
+                <div class="deliverable" th:each="x : ${deal.deliverables}">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div><b th:text="${x.type}">SCRIPT</b>
+                            <span class="small muted" th:text="' · due ' + ${#temporals.format(x.dueDate, 'dd MMM yyyy')}"></span></div>
+                        <span th:replace="~{fragments/layout :: status(${x.status})}"></span>
+                    </div>
+                    <div class="small muted" th:text="'Revisions used: ' + ${x.revisionCount} + ' / ' + ${deal.maxRevisions}">0 / 2</div>
+                    <pre th:if="${x.content != null}" th:text="${x.content}">content</pre>
+                    <div class="feedback" th:if="${x.feedback != null}"><b>Brand feedback:</b> <span th:text="${x.feedback}"></span></div>
+
+                    <!-- creator: submit / resubmit -->
+                    <form th:if="${isCreator and open and x.status.canSubmit()}" method="post"
+                          th:action="@{/deals/{d}/deliverables/{x}/submit(d=${deal.id}, x=${x.id})}">
+                        <label>Your script / draft link</label>
+                        <textarea name="content" required th:text="${x.content}"></textarea>
+                        <div class="btn-group"><button class="btn btn-primary" type="submit">Submit for review</button></div>
+                    </form>
+
+                    <!-- brand: undo a recent approval -->
+                    <form th:if="${isBrand and @deliverableService.canUndoApproval(x)}" method="post" class="feedback"
+                          style="border-left-color:var(--accent);background:var(--accent-soft)"
+                          th:action="@{/deals/{d}/deliverables/{x}/undo-approve(d=${deal.id}, x=${x.id})}">
+                        Approved by mistake? You can undo until
+                        <b th:text="${#temporals.format(@deliverableService.undoDeadline(x), 'HH:mm')}">12:00</b>.
+                        <button class="btn btn-sm" type="submit" style="margin-left:8px">Undo approval</button>
+                    </form>
+
+                    <!-- brand: review -->
+                    <th:block th:if="${isBrand and open and x.status.name() == 'SUBMITTED'}">
+                        <div class="btn-group">
+                            <form class="inline-form" method="post"
+                                  th:action="@{/deals/{d}/deliverables/{x}/approve(d=${deal.id}, x=${x.id})}">
+                                <button class="btn btn-primary" type="submit">Approve</button>
+                            </form>
+                        </div>
+                        <form method="post" th:action="@{/deals/{d}/deliverables/{x}/revise(d=${deal.id}, x=${x.id})}">
+                            <label th:text="'Request changes (' + ${deal.maxRevisions - x.revisionCount} + ' round(s) left)'">Request changes</label>
+                            <textarea name="feedback" placeholder="What should change?" required></textarea>
+                            <div class="btn-group"><button class="btn" type="submit"
+                                 th:disabled="${x.revisionCount >= deal.maxRevisions}">Request revision</button></div>
+                        </form>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <!-- right column: actions + history -->
+        <div>
+            <div class="card action-panel" th:unless="${deal.status.closed or isAdmin}">
+                <h2>Next step</h2>
+
+                <!-- creator responds to a proposal -->
+                <th:block th:if="${isCreator and st == 'PROPOSED'}">
+                    <form method="post" th:action="@{/deals/{id}/accept(id=${deal.id})}">
+                        <p class="small muted" style="margin:0 0 8px" th:text="'Accept at S$ ' + ${#numbers.formatDecimal(deal.budget, 1, 'COMMA', 2, 'POINT')}"></p>
+                        <button class="btn btn-primary" type="submit">Accept proposal</button>
+                    </form>
+                    <form method="post" th:action="@{/deals/{id}/counter(id=${deal.id})}">
+                        <label>Counter-offer (S$)</label>
+                        <input name="amount" type="number" min="1" step="10" required>
+                        <label>Reason (optional)</label>
+                        <input name="note" placeholder="e.g. includes extra filming day">
+                        <div class="btn-group"><button class="btn" type="submit">Send counter-offer</button></div>
+                    </form>
+                    <form method="post" th:action="@{/deals/{id}/reject(id=${deal.id})}">
+                        <input name="note" placeholder="Reason for rejecting (optional)">
+                        <div class="btn-group"><button class="btn btn-danger" type="submit">Reject</button></div>
+                    </form>
+                </th:block>
+                <p th:if="${isBrand and st == 'PROPOSED'}" class="muted">Waiting for the creator to respond.</p>
+
+                <!-- brand answers a counter-offer -->
+                <th:block th:if="${isBrand and st == 'COUNTERED'}">
+                    <form method="post" th:action="@{/deals/{id}/accept(id=${deal.id})}">
+                        <p class="small muted" style="margin:0 0 8px"
+                           th:text="'Creator asked for S$ ' + ${#numbers.formatDecimal(deal.counterAmount, 1, 'COMMA', 2, 'POINT')}"></p>
+                        <button class="btn btn-primary" type="submit">Accept counter-offer</button>
+                    </form>
+                </th:block>
+                <p th:if="${isCreator and st == 'COUNTERED'}" class="muted">Waiting for the brand to answer your counter-offer.</p>
+
+                <!-- creator publishes -->
+                <th:block th:if="${isCreator and open}">
+                    <form method="post" th:action="@{/deals/{id}/publish(id=${deal.id})}">
+                        <label>Published video link</label>
+                        <input name="url" type="url" placeholder="https://..." th:disabled="${!deal.scriptApproved}" required>
+                        <p class="small muted" th:unless="${deal.scriptApproved}">Available once the brand approves your script.</p>
+                        <div class="btn-group"><button class="btn btn-primary" type="submit"
+                             th:disabled="${!deal.scriptApproved}">Mark as published</button></div>
+                    </form>
+                </th:block>
+                <p th:if="${isBrand and open}" class="muted">Creator is working on the deliverables.</p>
+
+                <!-- brand pays -->
+                <th:block th:if="${st == 'PUBLISHED'}">
+                    <form th:if="${isBrand}" method="post" th:action="@{/deals/{id}/pay(id=${deal.id})}">
+                        <p class="small muted" style="margin:0 0 8px"
+                           th:text="'Pay S$ ' + ${#numbers.formatDecimal(deal.agreedAmount, 1, 'COMMA', 2, 'POINT')} + ' by ' + ${#temporals.format(deal.paymentDueDate, 'dd MMM yyyy')}"></p>
+                        <button class="btn btn-primary" type="submit">Confirm payment sent</button>
+                    </form>
+                    <p th:if="${isCreator}" class="muted">Video is live. Waiting for the brand's payment.</p>
+                </th:block>
+
+                <!-- brand can cancel before publishing -->
+                <form th:if="${isBrand and (st == 'PROPOSED' or st == 'COUNTERED' or open)}" method="post"
+                      th:action="@{/deals/{id}/cancel(id=${deal.id})}"
+                      onsubmit="return confirm('Cancel this deal?')">
+                    <input name="note" placeholder="Reason for cancelling (optional)">
+                    <div class="btn-group"><button class="btn btn-danger" type="submit">Cancel deal</button></div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>History</h2>
+                <ul class="timeline">
+                    <li th:each="h : ${deal.history}">
+                        <div>
+                            <span th:if="${h.fromStatus != null}" th:text="${h.fromStatus} + ' → '"></span><b th:text="${h.toStatus}">STATUS</b>
+                        </div>
+                        <div class="small muted"
+                             th:text="${h.changedBy != null ? h.changedBy.username : 'system'} + ' · ' + ${#temporals.format(h.changedAt, 'dd MMM, HH:mm')}">by</div>
+                        <div class="small" th:if="${h.note != null}" th:text="${h.note}">note</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

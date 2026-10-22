@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Access denied')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container" style="max-width:560px">
+    <div class="card">
+        <h1>403 · Access denied</h1>
+        <p class="muted">You don't have permission to open this page.</p>
+        <p th:if="${message != null}" th:text="${message}">detail</p>
+        <p class="small muted">URL: <code th:text="${path}">/path</code></p>
+        <p class="small muted" th:if="403 == 403">If you just restarted the app, your old page may have expired —
+            <a th:href="@{/login}">sign in again</a>.</p>
+        <div class="btn-group"><a class="btn btn-primary" th:href="@{/}">Go to my dashboard</a></div>
+    </div>
+</main>
+</body>
+</html>

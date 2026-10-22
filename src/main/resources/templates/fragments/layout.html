@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- <head> shared by every page -->
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · CollabDesk'">CollabDesk</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<!-- top navigation, links depend on the role -->
+<header th:fragment="topbar" class="topbar">
+    <div class="topbar-inner">
+        <a class="brand-logo" th:href="@{/}">Collab<span>Desk</span></a>
+        <nav class="nav" th:if="${me != null}">
+            <th:block th:if="${isCreator}">
+                <a th:href="@{/creator/dashboard}">Dashboard</a>
+                <a th:href="@{/deals}">My deals</a>
+                <a th:href="@{/creator/profile}">Profile</a>
+            </th:block>
+            <th:block th:if="${isBrand}">
+                <a th:href="@{/brand/dashboard}">Dashboard</a>
+                <a th:href="@{/brand/creators}">Find creators</a>
+                <a th:href="@{/deals}">Our deals</a>
+            </th:block>
+            <th:block th:if="${isAdmin}">
+                <a th:href="@{/admin/dashboard}">Overview</a>
+                <a th:href="@{/admin/users}">Users</a>
+                <a th:href="@{/deals}">All deals</a>
+                <a th:href="@{/swagger-ui.html}">API</a>
+            </th:block>
+        </nav>
+        <div class="userbox" th:if="${me != null}">
+            <span th:text="${me.displayName}">Name</span>
+            <span class="role-tag" th:text="${me.role}">ROLE</span>
+            <form class="inline-form" th:action="@{/logout}" method="post">
+                <button class="btn btn-sm" type="submit">Log out</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<!-- success / error messages from redirects -->
+<th:block th:fragment="flash">
+    <div class="flash ok" th:if="${success}" th:text="${success}">ok</div>
+    <div class="flash err" th:if="${error}" th:text="${error}">error</div>
+</th:block>
+
+<!-- coloured status pill -->
+<span th:fragment="status(s)" class="badge" th:classappend="${'st-' + s}" th:text="${s}">STATUS</span>
+
+</body>
+</html>

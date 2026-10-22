@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Not found')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container" style="max-width:560px">
+    <div class="card">
+        <h1>404 · Not found</h1>
+        <p class="muted">This page or record doesn't exist.</p>
+        <p th:if="${message != null}" th:text="${message}">detail</p>
+        <p class="small muted">URL: <code th:text="${path}">/path</code></p>
+        <p class="small muted" th:if="404 == 403">If you just restarted the app, your old page may have expired —
+            <a th:href="@{/login}">sign in again</a>.</p>
+        <div class="btn-group"><a class="btn btn-primary" th:href="@{/}">Go to my dashboard</a></div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+    <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+    <div class="page-head">
+        <div><h1>Platform overview</h1><div class="muted">All creators, brands and deals.</div></div>
+        <form th:action="@{/admin/run-overdue-check}" method="post">
+            <button class="btn btn-primary" type="submit">Run overdue check now</button>
+        </form>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="label">Users</div><div class="value" th:text="${stats.totalUsers()}">0</div></div>
+        <div class="stat"><div class="label">Deals</div><div class="value" th:text="${stats.totalDeals()}">0</div></div>
+        <div class="stat"><div class="label">Paid to creators</div>
+            <div class="value" th:text="'S$ ' + ${#numbers.formatDecimal(stats.totalPaidValue(), 1, 'COMMA', 0, 'POINT')}">0</div></div>
+        <div class="stat" th:classappend="${stats.paymentOverdueDeals() > 0} ? 'alert'"><div class="label">Payments overdue</div>
+            <div class="value" th:text="${stats.paymentOverdueDeals()}">0</div></div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h2>Deals by status</h2>
+            <table>
+                <tr th:each="e : ${stats.dealsByStatus()}">
+                    <td><a th:href="@{/deals(status=${e.key})}"><span th:replace="~{fragments/layout :: status(${e.key})}"></span></a></td>
+                    <td style="text-align:right" th:text="${e.value}">0</td>
+                </tr>
+            </table>
+        </div>
+        <div class="card">
+            <h2>About the overdue check</h2>
+            <p class="muted small">Runs automatically every day at 01:00 (<code>@Scheduled</code>). It marks deliverables past
+                their due date as <b>OVERDUE</b> and flags published deals whose payment due date has passed.
+                Use the button above to run it immediately.</p>
+        </div>
+    </div>
+</main>
+</body>
+</html>

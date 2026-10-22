@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: topbar}"></header>
+<main class="container">
+    <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+
+    <div class="page-head">
+        <div>
+            <h1 th:text="'Hi, ' + ${me.displayName}">Hi</h1>
+            <div class="muted">
+                <span th:text="${profile.handle}">@handle</span> ·
+                <span th:text="${profile.platform}">TIKTOK</span> ·
+                <span th:text="${#numbers.formatInteger(profile.followerCount, 1, 'COMMA')} + ' followers'">0</span>
+            </div>
+        </div>
+        <a class="btn" th:href="@{/deals}">View all deals</a>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="label">Active deals</div><div class="value" th:text="${summary.activeDeals}">0</div></div>
+        <div class="stat"><div class="label">Needs your action</div><div class="value" th:text="${#lists.size(summary.needsAction)}">0</div></div>
+        <div class="stat"><div class="label">Earned (paid)</div>
+            <div class="value" th:text="'S$ ' + ${#numbers.formatDecimal(summary.paidTotal, 1, 'COMMA', 0, 'POINT')}">0</div></div>
+        <div class="stat"><div class="label">Awaiting payment</div>
+            <div class="value" th:text="'S$ ' + ${#numbers.formatDecimal(summary.awaitingPayment, 1, 'COMMA', 0, 'POINT')}">0</div></div>
+        <div class="stat" th:classappend="${summary.overdueCount > 0} ? 'alert'"><div class="label">Overdue items</div>
+            <div class="value" th:text="${summary.overdueCount}">0</div></div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h2>Needs your action</h2>
+            <div th:if="${#lists.isEmpty(summary.needsAction)}" class="empty">You're all caught up 🎉</div>
+            <div class="list-row" th:each="d : ${summary.needsAction}">
+                <div>
+                    <a th:href="@{/deals/{id}(id=${d.id})}" th:text="${d.title}">Deal</a>
+                    <div class="small muted" th:text="${d.brand.companyName}">Brand</div>
+                </div>
+                <div style="text-align:right">
+                    <span th:replace="~{fragments/layout :: status(${d.status})}"></span>
+                    <div class="action-hint" th:text="${@dealActions.nextAction(d, me.role)}">Do this</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Upcoming deadlines</h2>
+            <div th:if="${#lists.isEmpty(summary.upcoming)}" class="empty">No open deliverables</div>
+            <div class="list-row" th:each="x : ${summary.upcoming}">
+                <div>
+                    <a th:href="@{/deals/{id}(id=${x.deal.id})}" th:text="${x.deal.title}">Deal</a>
+                    <div class="small muted" th:text="${x.type} + ' · due ' + ${#temporals.format(x.dueDate, 'dd MMM')}">SCRIPT</div>
+                </div>
+                <span th:replace="~{fragments/layout :: status(${x.status})}"></span>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
