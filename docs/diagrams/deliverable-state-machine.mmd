@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> SUBMITTED : Creator submits
+    SUBMITTED --> APPROVED : Brand approves
+    APPROVED --> SUBMITTED : Brand undoes approval<br/>(within 5 min, deal still ACCEPTED)
+    SUBMITTED --> REVISION_REQUESTED : Brand gives feedback<br/>(only if revisionCount < maxRevisions)
+    REVISION_REQUESTED --> SUBMITTED : Creator resubmits
+    PENDING --> OVERDUE : Scheduled job (past due date)
+    REVISION_REQUESTED --> OVERDUE : Scheduled job
+    OVERDUE --> SUBMITTED : Creator submits late

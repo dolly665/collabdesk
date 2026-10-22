@@ -1,0 +1,77 @@
+erDiagram
+    USERS ||--o| CREATOR_PROFILES : has
+    USERS ||--o| BRAND_PROFILES : has
+    BRAND_PROFILES ||--o{ DEALS : proposes
+    CREATOR_PROFILES ||--o{ DEALS : receives
+    DEALS ||--o{ DELIVERABLES : contains
+    DEALS ||--o{ DEAL_STATUS_HISTORY : logs
+    USERS ||--o{ DEAL_STATUS_HISTORY : changed_by
+
+    USERS {
+        bigint id PK
+        varchar username UK
+        varchar password_hash
+        varchar display_name
+        varchar email UK
+        varchar role "CREATOR | BRAND | ADMIN"
+        boolean enabled
+        datetime created_at
+    }
+    CREATOR_PROFILES {
+        bigint id PK
+        bigint user_id FK, UK
+        varchar platform "TIKTOK | YOUTUBE | INSTAGRAM | XIAOHONGSHU"
+        varchar handle
+        int follower_count
+        varchar niche
+        decimal base_rate
+        varchar bio
+    }
+    BRAND_PROFILES {
+        bigint id PK
+        bigint user_id FK, UK
+        varchar company_name
+        varchar industry
+        varchar website
+    }
+    DEALS {
+        bigint id PK
+        bigint brand_id FK
+        bigint creator_id FK
+        varchar title
+        text brief
+        decimal budget
+        decimal counter_amount
+        decimal agreed_amount
+        varchar status
+        date due_date
+        int max_revisions "default 2"
+        int payment_term_days "default 30"
+        varchar published_url
+        date published_date
+        date payment_due_date
+        boolean payment_overdue
+        datetime created_at
+        datetime updated_at
+    }
+    DELIVERABLES {
+        bigint id PK
+        bigint deal_id FK
+        varchar type "SCRIPT | DRAFT_VIDEO"
+        varchar status
+        date due_date
+        text content "script text or video link"
+        text feedback
+        int revision_count
+        datetime approved_at
+        datetime submitted_at
+    }
+    DEAL_STATUS_HISTORY {
+        bigint id PK
+        bigint deal_id FK
+        varchar from_status
+        varchar to_status
+        bigint changed_by FK
+        varchar note
+        datetime changed_at
+    }

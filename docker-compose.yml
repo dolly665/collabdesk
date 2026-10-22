@@ -1,0 +1,33 @@
+# Runs CollabDesk + MySQL together:  docker compose up --build
+# then open http://localhost:8080
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: collabdesk
+      MYSQL_DATABASE: collabdesk
+      TZ: Asia/Singapore
+    ports:
+      - "3307:3306"          # 3307 on the host so it doesn't clash with a local MySQL
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pcollabdesk"]
+      interval: 5s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/collabdesk?serverTimezone=Asia/Singapore
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: collabdesk
+    ports:
+      - "8080:8080"
+
+volumes:
+  db-data:

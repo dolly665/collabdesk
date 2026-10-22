@@ -1,0 +1,14 @@
+stateDiagram-v2
+    [*] --> PROPOSED : Brand sends proposal
+    PROPOSED --> ACCEPTED : Creator accepts
+    PROPOSED --> COUNTERED : Creator counter-offers
+    PROPOSED --> REJECTED : Creator rejects
+    COUNTERED --> ACCEPTED : Brand accepts counter
+    COUNTERED --> CANCELLED : Brand cancels
+    PROPOSED --> CANCELLED : Brand cancels
+    ACCEPTED --> PUBLISHED : Creator submits post URL<br/>(script must be APPROVED)
+    ACCEPTED --> CANCELLED : Brand cancels
+    PUBLISHED --> PAID : Brand confirms payment
+    PAID --> [*]
+    REJECTED --> [*]
+    CANCELLED --> [*]
