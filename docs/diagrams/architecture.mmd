@@ -1,0 +1,38 @@
+flowchart TB
+    subgraph Clients
+        B["Browser<br/>Thymeleaf pages + session cookie"]
+        P["Postman / Swagger UI<br/>JSON + HTTP Basic"]
+    end
+    subgraph Security["Spring Security filter chain"]
+        S["Form login / HTTP Basic · BCrypt · CSRF<br/>URL rules by role · @PreAuthorize"]
+    end
+    subgraph Web["Controller layer"]
+        WC["Web MVC controllers<br/>/creator/** · /brand/** · /admin/** · /deals/**"]
+        AC["REST controllers<br/>/api/**"]
+        EH["Exception handlers<br/>HTML error pages · JSON errors"]
+    end
+    subgraph Service["Service layer (business rules, @Transactional)"]
+        DS["DealService<br/>state machine + ownership"]
+        DLS["DeliverableService<br/>review · revision limit · undo"]
+        OT["DashboardService · AccountService<br/>CreatorService · StatsService"]
+        SCH["OverdueScheduler<br/>@Scheduled daily 01:00"]
+    end
+    subgraph Data["Repository layer"]
+        R["Spring Data JPA repositories"]
+    end
+    DB[("H2 (dev) / MySQL 8 (profile 'mysql')")]
+    B --> S
+    P --> S
+    S --> WC
+    S --> AC
+    WC --> DS
+    WC --> DLS
+    WC --> OT
+    AC --> DS
+    AC --> DLS
+    AC --> OT
+    SCH --> R
+    DS --> R
+    DLS --> R
+    OT --> R
+    R --> DB

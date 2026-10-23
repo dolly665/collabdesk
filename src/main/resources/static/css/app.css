@@ -47,7 +47,9 @@ h2 { font-size: 15px; margin: 0 0 12px; font-weight: 600; }
 @media (max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } .nav { display: none; } }
 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+/* stacked cards get a gap; cards side by side in a grid must not, or they become misaligned */
 .card + .card { margin-top: 16px; }
+.grid > .card + .card, .grid > div > .card:first-child { margin-top: 0; }
 
 /* ---------- stat tiles ---------- */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
