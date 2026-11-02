@@ -1,0 +1,100 @@
+classDiagram
+    direction LR
+    class User {
+        -Long id
+        -String username
+        -String passwordHash
+        -String displayName
+        -String email
+        -Role role
+        -boolean enabled
+        -LocalDateTime createdAt
+    }
+    class CreatorProfile {
+        -Long id
+        -Platform platform
+        -String handle
+        -int followerCount
+        -String niche
+        -BigDecimal baseRate
+        -String bio
+    }
+    class BrandProfile {
+        -Long id
+        -String companyName
+        -String industry
+        -String website
+    }
+    class Deal {
+        -Long id
+        -String title
+        -String brief
+        -BigDecimal budget
+        -BigDecimal counterAmount
+        -BigDecimal agreedAmount
+        -DealStatus status
+        -LocalDate dueDate
+        -int maxRevisions
+        -int paymentTermDays
+        -String publishedUrl
+        -LocalDate paymentDueDate
+        -boolean paymentOverdue
+        +addDeliverable(Deliverable)
+        +addHistory(DealStatusHistory)
+        +isScriptApproved() boolean
+    }
+    class Deliverable {
+        -Long id
+        -DeliverableType type
+        -DeliverableStatus status
+        -LocalDate dueDate
+        -String content
+        -String feedback
+        -int revisionCount
+        -LocalDateTime submittedAt
+        -LocalDateTime approvedAt
+    }
+    class DealStatusHistory {
+        -Long id
+        -DealStatus fromStatus
+        -DealStatus toStatus
+        -String note
+        -LocalDateTime changedAt
+    }
+    class DealStatus {
+        <<enumeration>>
+        PROPOSED
+        COUNTERED
+        ACCEPTED
+        PUBLISHED
+        PAID
+        REJECTED
+        CANCELLED
+        +canTransitionTo(DealStatus) boolean
+        +isClosed() boolean
+    }
+    class DeliverableStatus {
+        <<enumeration>>
+        PENDING
+        SUBMITTED
+        APPROVED
+        REVISION_REQUESTED
+        OVERDUE
+        +canSubmit() boolean
+    }
+    class Role {
+        <<enumeration>>
+        CREATOR
+        BRAND
+        ADMIN
+    }
+    User "1" -- "0..1" CreatorProfile
+    User "1" -- "0..1" BrandProfile
+    BrandProfile "1" -- "*" Deal : proposes
+    CreatorProfile "1" -- "*" Deal : receives
+    Deal "1" *-- "*" Deliverable
+    Deal "1" *-- "*" DealStatusHistory
+    DealStatusHistory "*" --> "0..1" User : changedBy
+    Deal ..> DealStatus
+    Deliverable ..> DeliverableStatus
+    User ..> Role

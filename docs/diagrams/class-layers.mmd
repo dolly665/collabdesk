@@ -1,0 +1,74 @@
+classDiagram
+    direction TB
+    class DealApiController {
+        +myDeals(auth, status) List~DealResponse~
+        +propose(auth, CreateDeal) DealResponse
+        +accept(auth, id) DealResponse
+        +counter(auth, id, Counter) DealResponse
+        +publish(auth, id, Publish) DealResponse
+        +pay(auth, id) DealResponse
+    }
+    class DealWebController {
+        +list(auth, status, model) String
+        +detail(auth, id, model) String
+        +accept(auth, id, ra) String
+        +counter(auth, id, amount, note, ra) String
+        +publish(auth, id, url, ra) String
+        +pay(auth, id, ra) String
+        +approve(auth, dealId, id, ra) String
+        +undoApprove(auth, dealId, id, ra) String
+        +revise(auth, dealId, id, feedback, ra) String
+    }
+    class DealService {
+        -DealRepository deals
+        -Clock clock
+        +listFor(User, DealStatus) List~Deal~
+        +getFor(User, Long) Deal
+        +propose(User, CreateDeal) Deal
+        +accept(User, Long) Deal
+        +counter(User, Long, Counter) Deal
+        +reject(User, Long, String) Deal
+        +cancel(User, Long, String) Deal
+        +publish(User, Long, String) Deal
+        +confirmPayment(User, Long) Deal
+        ~transition(Deal, DealStatus, User, String) Deal
+    }
+    class DeliverableService {
+        -int undoMinutes
+        +submit(User, Long, String) Deliverable
+        +approve(User, Long) Deliverable
+        +undoApproval(User, Long) Deliverable
+        +requestRevision(User, Long, String) Deliverable
+        +canUndoApproval(Deliverable) boolean
+    }
+    class OverdueScheduler {
+        +runChecks() int
+    }
+    class DashboardService {
+        +summaryFor(User) Summary
+    }
+    class DealRepository {
+        <<interface>>
+        +findByCreatorIdOrderByUpdatedAtDesc(Long)
+        +findByBrandIdOrderByUpdatedAtDesc(Long)
+        +countByStatus(DealStatus) long
+    }
+    class DeliverableRepository {
+        <<interface>>
+        +findByStatusInAndDueDateBefore(statuses, date)
+    }
+    class JpaRepository {
+        <<interface>>
+    }
+    DealApiController --> DealService
+    DealApiController --> DeliverableService
+    DealWebController --> DealService
+    DealWebController --> DeliverableService
+    DeliverableService --> DealService : ownership check
+    DashboardService --> DealService
+    DealService --> DealRepository
+    DeliverableService --> DeliverableRepository
+    OverdueScheduler --> DealRepository
+    OverdueScheduler --> DeliverableRepository
+    DealRepository --|> JpaRepository
+    DeliverableRepository --|> JpaRepository

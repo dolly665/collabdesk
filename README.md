@@ -23,8 +23,11 @@ By default the app uses an **in-memory H2 database** (no setup; data resets on r
 
 ### Using MySQL instead
 
-1. Edit `src/main/resources/application-mysql.properties` and set your MySQL password.
-2. In IntelliJ: *Run → Edit Configurations → Active profiles* = `mysql`.
+1. In IntelliJ: *Run → Edit Configurations* →
+   - **Active profiles** = `mysql`
+   - **Environment variables** = `MYSQL_PASSWORD=<your MySQL root password>`
+     (the password is read from the environment, so it is never committed to Git)
+2. Start MySQL 8 locally on port 3306.
 3. The `collabdesk` database is created automatically on first start.
 
 ### Using Docker (app + MySQL in one command)
