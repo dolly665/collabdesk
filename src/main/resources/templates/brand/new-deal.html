@@ -23,7 +23,7 @@
         <div class="row">
             <div>
                 <label>Budget (S$)</label>
-                <input th:field="*{budget}" type="number" min="1" step="10">
+                <input th:field="*{budget}" type="number" min="10" step="10">
                 <div class="field-error" th:if="${#fields.hasErrors('budget')}" th:errors="*{budget}"></div>
             </div>
             <div>

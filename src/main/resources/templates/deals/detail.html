@@ -118,7 +118,7 @@
                     </form>
                     <form method="post" th:action="@{/deals/{id}/counter(id=${deal.id})}">
                         <label>Counter-offer (S$)</label>
-                        <input name="amount" type="number" min="1" step="10" required>
+                        <input name="amount" type="number" min="10" step="10" required>
                         <label>Reason (optional)</label>
                         <input name="note" placeholder="e.g. includes extra filming day">
                         <div class="btn-group"><button class="btn" type="submit">Send counter-offer</button></div>
